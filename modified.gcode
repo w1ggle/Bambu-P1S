@@ -8,50 +8,58 @@ M710 A1 S255 ;turn on MC fan by default(P1S)
 
 M412 S1 ; ===turn on filament runout detection=== ;moved filament runout here, no point in doing the bottom stuff if theres no filament
 
-;===== reset machine status =================
-M290 X40 Y40 Z2.6666666
-G91
-M17 Z0.4 ; lower the z-motor current
-G380 S2 Z30 F300 ; G380 is same as G38; lower the hotbed , to prevent the nozzle is below the hotbed
-G380 S2 Z-25 F300 ;
-G1 Z5 F300;
-G90
-M17 X1.2 Y1.2 Z0.75 ; reset motor current to default
-M960 S5 P1 ; turn on logo lamp
-G90
+;===== preheat ==================== ;heating takes the longest. Bed takes 2.5 mins to heat up
+M1002 gcode_claim_action : 2 ;display Heatbed preheating
+M140 S[bed_temperature_initial_layer_single] ;set bed temp
+M104 S140 ;set extruder temp to 140 (so you can touch the bed)
+
+;===== reset machine status ================= ;first half i believe checks if the bed is all the way at the bottom. I dont think its necessary
+;M290 X40 Y40 Z2.6666666 ;baby step (what for?)
+;G91 ; use relative coordinates
+;M17 Z0.4 ; lower the z-motor current ; turn on slow mode. think this is if the bed is all the way dowm, it wont slam into the bottom
+;G380 S2 Z10 F300 ; G380 is same as G38; lower the hotbed , to prevent the nozzle is below the hotbed ;changed height from 30 to 10
+;G380 S2 Z-5 F300 ;changed height from -25 to -5
+;G1 Z5 F300 ;whats the point of moving bed down 5
+;G90 ; Set all axes to absolute
+;M17 X1.2 Y1.2 Z0.75 ; reset motor current to default
+;M960 S5 P1 ; turn on logo lamp can turn off this lamp ;what logo lamp?
+;G90
 M220 S100 ;Reset Feedrate
 M221 S100 ;Reset Flowrate
 M73.2   R1.0 ;Reset left time magnitude
-M1002 set_gcode_claim_speed_level : 5
+M1002 set_gcode_claim_speed_level : 5 ;display M400 pause ;whats the point of this
 M221 X0 Y0 Z0 ; turn off soft endstop to prevent protential logic problem
 G29.1 Z{+0.0} ; clear z-trim value first
 M204 S10000 ; init ACC set to 10m/s^2
 
-;===== heatbed preheat ====================
-M1002 gcode_claim_action : 2
-M140 S[bed_temperature_initial_layer_single] ;set bed temp
-M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+;===== heatbed preheat ==================== ;moved this up
+;M1002 gcode_claim_action : 2
+;M140 S[bed_temperature_initial_layer_single] ;set bed temp
+;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 
-
-
+;think this can all be commented out, i havent had pla jams
 ;=============turn on fans to prevent PLA jamming=================
-{if filament_type[initial_extruder]=="PLA"}
-    {if (bed_temperature[initial_extruder] >45)||(bed_temperature_initial_layer[initial_extruder] >45)}
-    M106 P3 S180
-    {endif};Prevent PLA from jamming
-{endif}
-M106 P2 S100 ; turn on big fan ,to cool down toolhead
+;{if filament_type[initial_extruder]=="PLA"}
+;    {if (bed_temperature[initial_extruder] >45)||(bed_temperature_initial_layer[initial_extruder] >45)}
+;    M106 P3 S180
+;    {endif};Prevent PLA from jamming
+;{endif}
+;M106 P2 S100 ; turn on big fan ,to cool down toolhead
 
 ;===== prepare print temperature and material ==========
-M104 S[nozzle_temperature_initial_layer] ;set extruder temp
-G91
-G0 Z10 F1200
-G90
-G28 X
-M975 S1 ; turn on
-G1 X60 F12000
+;M104 S[nozzle_temperature_initial_layer] ;set extruder temp ;extruder temp is set to 140 earlier
+G91 ; Set all axes to relative 
+G0 Z10 F1200 ;move bed down (think so it can move the gantry to the front right corner and not scrape) ; changed from z10 to z5
+G90 ; Set all axes to absolute 
+G28 X ;homing x axis (is in the front right)
+M975 S1 ; turn on vibration suppression
+
+G1 X60 F12000 ;moves to the poop chute, in case oozing happens in the next parts
 G1 Y245
 G1 Y265 F3000
+
+;TODO add purge here if using AMS
+; ========== switch material if AMS exists ==========
 M620 M
 M620 S[initial_extruder]A   ; switch material if AMS exist
     M109 S[nozzle_temperature_initial_layer]
