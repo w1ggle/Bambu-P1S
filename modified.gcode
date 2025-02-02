@@ -76,22 +76,22 @@ M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_t
 
 
 
-
-M109 S250 ;set nozzle to common flush temp
-M106 P1 S0
-G92 E0
-G1 E50 F200
-M400
-M104 S[nozzle_temperature_initial_layer]
-G92 E0
-G1 E50 F200
-M400
-M106 P1 S255
-G92 E0
-G1 E5 F300
-M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ; drop nozzle temp, make filament shink a bit
-G92 E0
-G1 E-0.5 F300
+; ========== purge nozzle and remove poop ========== ; i think theres no need to purge nozzle every time unless ams is used, i think this should be in ams block above
+;M109 S250 ;set nozzle to common flush temp
+;M106 P1 S0 ;turn off fan (helps nozzle heat up faster)
+;G92 E0 ;reset extruded to 0
+;G1 E10 F200 ;reduced extrusion from 50 to 10
+;M400 ;wait till everything is done
+;M104 S[nozzle_temperature_initial_layer] ;no need to purge twice
+;G92 E0
+;G1 E50 F200
+;M400
+;M106 P1 S100 ;reduced fan speed from 255 to 100
+;G92 E0 ;no need to purge again
+;G1 E5 F300
+;M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ; drop nozzle temp, make filament shink a bit
+;G92 E0 ;reset extruded to 0
+;G1 E-0.5 F300 ;retract 1mm of filament to reduce oozing ;changed -0.5 to -1
 
 G1 X70 F9000
 G1 X76 F15000
@@ -103,7 +103,7 @@ G1 X95 F15000
 G1 X80 F15000
 G1 X165 F15000; wipe and shake
 M400
-M106 P1 S0
+M106 P1 S0 ;turn off fan
 ;===== prepare print temperature and material end =====
 
 
