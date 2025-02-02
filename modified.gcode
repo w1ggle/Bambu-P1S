@@ -3,8 +3,11 @@
 ;===== modified by w1ggle =================
 
 ;===== turn on the HB fan & MC board fan =================
-M104 S75 ;set extruder temp to turn on the HB fan and prevent filament oozing from nozzle
+;M104 S75 ;set extruder temp to turn on the HB fan and prevent filament oozing from nozzle ;think the MC fan turns on regardless of extruder temp
 M710 A1 S255 ;turn on MC fan by default(P1S)
+
+M412 S1 ; ===turn on filament runout detection=== ;moved filament runout here, no point in doing the bottom stuff if theres no filament
+
 ;===== reset machine status =================
 M290 X40 Y40 Z2.6666666
 G91
@@ -64,7 +67,7 @@ M621 S[initial_extruder]A
 M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
 
 
-M412 S1 ; ===turn on filament runout detection===
+
 
 M109 S250 ;set nozzle to common flush temp
 M106 P1 S0
