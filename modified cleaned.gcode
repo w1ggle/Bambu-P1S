@@ -2,66 +2,40 @@
 ;===== date: 20250202 =====================
 ;===== modified by w1ggle =================
 
-;===== turn on the HB fan & MC board fan =================
-;M104 S75 ;set extruder temp to turn on the HB fan and prevent filament oozing from nozzle ;think the MC fan turns on regardless of extruder temp
-M710 A1 S255 ;turn on MC fan by default(P1S)
+;===== turn on mainboard fan =================
+M710 A1 S255 ;turn on MC fan to prevent overheating
 
-M412 S1 ; ===turn on filament runout detection=== ;moved filament runout here, no point in doing the bottom stuff if theres no filament
+; ===turn on filament runout detection===
+M412 S1  ;moved filament runout here, no point in doing the bottom stuff if theres no filament
 
 ;===== preheat ==================== ;heating takes the longest. Bed takes 2.5 mins to heat up
 M1002 gcode_claim_action : 2 ;display Heatbed preheating
 M140 S[bed_temperature_initial_layer_single] ;set bed temp
 M104 S140 ;set extruder temp to 140 (so you can touch the bed)
 
-;===== reset machine status ================= ;first half i believe checks if the bed is all the way at the bottom. I dont think its necessary
-;M290 X40 Y40 Z2.6666666 ;baby step (what for?)
-
-;G380 S2 Z-5 F300 ;changed height from -25 to -5
-;G1 Z5 F300 ;whats the point of moving bed down 5
-
-
-;M960 S5 P1 ; turn on logo lamp can turn off this lamp ;what logo lamp?
-;G90
+;===== reset machine status/counters =================
 M220 S100 ;Reset Feedrate
 M221 S100 ;Reset Flowrate
 M73.2   R1.0 ;Reset left time magnitude
-;M1002 set_gcode_claim_speed_level : 5 ;display M400 pause ;whats the point of this
 M221 X0 Y0 Z0 ; turn off soft endstop to prevent protential logic problem
 G29.1 Z{+0.0} ; clear z-trim value first
 M204 S10000 ; init ACC set to 10m/s^2
 
-;===== heatbed preheat ==================== ;moved this up
-;M1002 gcode_claim_action : 2
-;M140 S[bed_temperature_initial_layer_single] ;set bed temp
-;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
-
-;think this can all be commented out, i havent had pla jams
-;=============turn on fans to prevent PLA jamming=================
-;{if filament_type[initial_extruder]=="PLA"}
-;    {if (bed_temperature[initial_extruder] >45)||(bed_temperature_initial_layer[initial_extruder] >45)}
-;    M106 P3 S180
-;    {endif};Prevent PLA from jamming
-;{endif}
-;M106 P2 S100 ; turn on big fan ,to cool down toolhead
-
-;===== prepare print temperature and material ==========
-;M104 S[nozzle_temperature_initial_layer] ;set extruder temp ;extruder temp is set to 140 earlier
+;===== home x and y axis ==========
 G91 ; use relative coordinates
 M17 Z0.4 ; lower the z-motor current ; turn on slow mode. think this is if the bed is all the way dowm, it wont slam into the bottom
-G380 S2 Z10 F300 ; G380 is same as G38; lower the hotbed , to prevent the nozzle is below the hotbed ;changed height from 30 to 10
+G380 S2 Z10 F300 ; lower heatbed so nozzle wont scrape it when homing ;changed height from 30 to 10
 G90 ; Set all axes to absolute
-M17 X1.2 Y1.2 Z0.75 ; reset motor current to default
-;G91 ; Set all axes to relative 
-;G0 Z5 F1200 ;move bed down (think so it can move the gantry to the front right corner and not scrape) ; changed from z10 to z5
-;G90 ; Set all axes to absolute 
+M17 X1.2 Y1.2 Z0.75 ; reset motor current to default/fast mode
 G28 X ;homing x axis (is in the front right)
 M975 S1 ; turn on vibration suppression
 
+;============= make sure nozzle has filament =========
 G1 X60 F12000 ;moves to the poop chute, in case oozing happens in the next parts
 G1 Y245
 G1 Y265 F3000
+M109 S140 ; wait for nozzle to get to 140 
 
-M109 S140 ;set nozzle to common flush temp
 ;TODO add purge here if using AMS
 ; ========== switch material if AMS exists ==========
 M620 M
@@ -78,26 +52,7 @@ M620 S[initial_extruder]A   ; switch material if AMS exist
 M621 S[initial_extruder]A
 M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
 
-
-
-; ========== purge nozzle and remove poop ========== ; i think theres no need to purge nozzle every time unless ams is used, i think this should be in ams block above
-;M109 S250 ;set nozzle to common flush temp
-;M106 P1 S0 ;turn off fan (helps nozzle heat up faster)
-;G92 E0 ;reset extruded to 0
-;G1 E10 F200 ;reduced extrusion from 50 to 10
-;M400 ;wait till everything is done
-;M104 S[nozzle_temperature_initial_layer] ;no need to purge twice
-;G92 E0
-;G1 E50 F200
-;M400
-;M106 P1 S100 ;reduced fan speed from 255 to 100
-;G92 E0 ;no need to purge again
-;G1 E5 F300
-;M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ; drop nozzle temp, make filament shink a bit
-;G92 E0 ;reset extruded to 0
-;G1 E-0.5 F300 ;retract 1mm of filament to reduce oozing ;changed -0.5 to -1
-
-;just wipe the oozing
+;======= wipe any oozing after changing ams filament or just waiting ============
 G1 X70 F9000
 G1 X76 F15000
 G1 X65 F15000
@@ -107,19 +62,14 @@ G1 X80 F6000
 G1 X95 F15000
 G1 X80 F15000
 G1 X165 F15000; wipe and shake
-;M400
-M106 P1 S0 ;turn off fan
-;===== prepare print temperature and material end =====
-
 
 ;===== wipe nozzle ===============================
 M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
 M975 S1 ; turn on vibration suppression
-M106 S100 ;reduced fan speed from 255 to 100
+;M106 S100 ;reduced fan speed from 255 to 100
 
 G1 X65 Y230 F18000 ;move to poop chute?
 G1 Y264 F6000
-;M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ;should the nozzle be hot when doing the circles at the bed? kinda think this can be skipped
 M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
 G1 X100 F18000 ; first wipe mouth
 
@@ -240,7 +190,7 @@ M975 S1 ; turn on vibration supression
 ;M106 P2 S100 ; turn on big fan ,to cool down toolhead
 
 
-M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
+
 
 ;think this is vibration comp (?)
 ;===== mech mode fast check============================
@@ -262,6 +212,7 @@ M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp ea
 
 
 ;===== nozzle load line =============================== ; adaptive purge line by u/Jusanden on Reddit
+M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
 M975 S1
 G90
 M83
