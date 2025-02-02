@@ -93,6 +93,7 @@ M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_t
 ;G92 E0 ;reset extruded to 0
 ;G1 E-0.5 F300 ;retract 1mm of filament to reduce oozing ;changed -0.5 to -1
 
+;just wipe the oozing
 G1 X70 F9000
 G1 X76 F15000
 G1 X65 F15000
@@ -108,18 +109,20 @@ M106 P1 S0 ;turn off fan
 
 
 ;===== wipe nozzle ===============================
-M1002 gcode_claim_action : 14
-M975 S1
-M106 S255
-G1 X65 Y230 F18000
+M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
+M975 S1 ; turn on vibration suppression
+M106 S100 ;reduced fan speed from 255 to 100
+
+G1 X65 Y230 F18000 ;move to poop chute?
 G1 Y264 F6000
-M109 S{nozzle_temperature_initial_layer[initial_extruder]-20}
+M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ;should the nozzle be hot when doing the circles at the bed? kinda think this can be skipped
+M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
 G1 X100 F18000 ; first wipe mouth
 
-G0 X135 Y253 F20000  ; move to exposed steel surface edge
+G0 X135 Y253 F20000  ; move to exposed steel surface edge in middle back
 G28 Z P0 T300; home z with low precision,permit 300deg temperature
 G29.2 S0 ; turn off ABL
-G0 Z5 F20000
+G0 Z5 F20000 ;move bed down 5 mm
 
 G1 X60 Y265
 G92 E0
@@ -174,13 +177,13 @@ G0 Z-1.01
 G0 X131 F211
 G0 X124
 G0 X128
-G2 I0.5 J0 F300
+G2 I0.5 J0 F300 ;spin in cirlces
 G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 
 M109 S140 ; wait nozzle temp down to heatbed acceptable
-G2 I0.5 J0 F3000
+G2 I0.5 J0 F3000 ;spin in cirlces
 G2 I0.5 J0 F3000
 G2 I0.5 J0 F3000
 G2 I0.5 J0 F3000
@@ -198,6 +201,8 @@ M106 S0 ; turn off fan , too noisy
 
 
 ;===== bed leveling ==================================
+M109 S140 ; set temp down to heatbed acceptable
+M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
 M1002 judge_flag g29_before_print_flag
 M622 J1
 
