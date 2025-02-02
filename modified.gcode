@@ -227,32 +227,33 @@ M623
 M975 S1 ; turn on vibration supression
 
 
-;=============turn on fans to prevent PLA jamming=================
-{if filament_type[initial_extruder]=="PLA"}
-    {if (bed_temperature[initial_extruder] >45)||(bed_temperature_initial_layer[initial_extruder] >45)}
-    M106 P3 S180
-    {endif};Prevent PLA from jamming
-{endif}
-M106 P2 S100 ; turn on big fan ,to cool down toolhead
+;=============turn on fans to prevent PLA jamming================= ;turned off second pla jamming
+;{if filament_type[initial_extruder]=="PLA"}
+;    {if (bed_temperature[initial_extruder] >45)||(bed_temperature_initial_layer[initial_extruder] >45)}
+;    M106 P3 S180
+;    {endif};Prevent PLA from jamming
+;{endif}
+;M106 P2 S100 ; turn on big fan ,to cool down toolhead
 
 
 M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
 
+;think this is vibration comp (?)
 ;===== mech mode fast check============================
-G1 X128 Y128 Z10 F20000
-M400 P200
-M970.3 Q1 A7 B30 C80  H15 K0
-M974 Q1 S2 P0
+;G1 X128 Y128 Z10 F20000
+;M400 P200
+;M970.3 Q1 A7 B30 C80  H15 K0
+;M974 Q1 S2 P0
 
-G1 X128 Y128 Z10 F20000
-M400 P200
-M970.3 Q0 A7 B30 C90 Q0 H15 K0
-M974 Q0 S2 P0
+;G1 X128 Y128 Z10 F20000
+;M400 P200
+;M970.3 Q0 A7 B30 C90 Q0 H15 K0
+;M974 Q0 S2 P0
 
-M975 S1
-G1 F30000
-G1 X230 Y15
-G28 X ; re-home XY
+;M975 S1
+;G1 F30000
+;G1 X230 Y15
+;G28 X ; re-home XY
 ;===== fmech mode fast check============================
 
 
