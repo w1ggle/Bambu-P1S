@@ -24,7 +24,7 @@ M204 S10000 ; init ACC set to 10m/s^2
 ;===== home x and y axis ==========
 G91 ; use relative coordinates
 M17 Z0.4 ; lower the z-motor current ; turn on slow mode. think this is if the bed is all the way dowm, it wont slam into the bottom
-G380 S2 Z10 F300 ; lower heatbed so nozzle wont scrape it when homing ;changed height from 30 to 10
+G380 S2 Z5 F300 ; lower heatbed so nozzle wont scrape it when homing ;changed height from 30 to 5
 G90 ; Set all axes to absolute
 M17 X1.2 Y1.2 Z0.75 ; reset motor current to default/fast mode
 G28 X ;homing x axis (is in the front right)
@@ -34,7 +34,6 @@ M975 S1 ; turn on vibration suppression
 G1 X60 F12000 ;moves to the poop chute, in case oozing happens in the next parts
 G1 Y245
 G1 Y265 F3000
-M109 S140 ; wait for nozzle to get to 140 
 
 ;TODO add purge here if using AMS
 ; ========== switch material if AMS exists ==========
@@ -52,7 +51,14 @@ M620 S[initial_extruder]A   ; switch material if AMS exist
 M621 S[initial_extruder]A
 M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
 
+M109 S140 ; wait for nozzle to get to 140 
+M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
+M400
+;after waiting this long, i expect oozing
+
 ;======= wipe any oozing after changing ams filament or just waiting ============
+M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
+M975 S1 ; turn on vibration suppression
 G1 X70 F9000
 G1 X76 F15000
 G1 X65 F15000
@@ -63,33 +69,29 @@ G1 X95 F15000
 G1 X80 F15000
 G1 X165 F15000; wipe and shake
 
-;===== wipe nozzle ===============================
-M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
-M975 S1 ; turn on vibration suppression
-;M106 S100 ;reduced fan speed from 255 to 100
+;G1 X65 Y230 F18000 ;move to poop chute?
+;G1 Y264 F6000
 
-G1 X65 Y230 F18000 ;move to poop chute?
-G1 Y264 F6000
-M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
-G1 X100 F18000 ; first wipe mouth
+;G1 X100 F18000 ; first wipe mouth
 
 G0 X135 Y253 F20000  ; move to exposed steel surface edge in middle back
 G28 Z P0 T300; home z with low precision,permit 300deg temperature
 G29.2 S0 ; turn off ABL
 G0 Z5 F20000 ;move bed down 5 mm
 
-G1 X60 Y265
-G92 E0
-G1 E-0.5 F300 ; retrack more
-G1 X100 F5000; second wipe mouth
-G1 X70 F15000
-G1 X100 F5000
-G1 X70 F15000
-G1 X100 F5000
-G1 X70 F15000
-G1 X100 F5000
-G1 X70 F15000
-G1 X90 F5000
+;G1 X60 Y265
+;G92 E0
+;G1 E-0.5 F300 ; retrack more
+;G1 X100 F5000; second wipe mouth
+;G1 X70 F15000
+;G1 X100 F5000
+;G1 X70 F15000
+;G1 X100 F5000
+;G1 X70 F15000
+;G1 X100 F5000
+;G1 X70 F15000
+;G1 X90 F5000
+
 ;G0 X128 Y261 Z-1.5 F20000  ; move to exposed steel surface and stop the nozzle
 ;M104 S140 ; set temp down to heatbed acceptable
 ;M106 S255 ; turn on fan (G28 has turn off fan)
@@ -136,18 +138,19 @@ G1 X90 F5000
 ;G2 I0.5 J0 F300
 ;G2 I0.5 J0 F300
 
-M109 S140 ; wait nozzle temp down to heatbed acceptable
+;M109 S140 ; wait nozzle temp down to heatbed acceptable
 ;G2 I0.5 J0 F3000 ;spin in cirlces
 ;G2 I0.5 J0 F3000
 ;G2 I0.5 J0 F3000
 ;G2 I0.5 J0 F3000
 
 M221 R; pop softend status
-G1 Z10 F1200
+;G1 Z10 F1200
 M400
-G1 Z10
-G1 F30000
-G1 X230 Y15
+; move to the front right??? but why
+;G1 Z10
+;G1 F30000
+;G1 X230 Y15
 G29.2 S1 ; turn on ABL
 ;G28 ; home again after hard wipe mouth
 M106 S0 ; turn off fan , too noisy
@@ -159,15 +162,15 @@ M1002 judge_flag g29_before_print_flag
 M622 J1
 
     M1002 gcode_claim_action : 1
-    M109 S140 ; set temp down to heatbed acceptable
-    M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
+;    M109 S140 ; set temp down to heatbed acceptable
+;    M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;can wait for this at a later point
     G29 A1 X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]} ;dynamic bed level area instead of whole bed, found by Leckiestein on tiktok (doesnt work with firmware 01.07)
     M400
     M500 ; save cali data
 
 M623
 ;===== bed leveling end ================================
-
+M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
 ;===== home after wipe mouth============================
 M1002 judge_flag g29_before_print_flag
 M622 J0
@@ -212,7 +215,7 @@ M975 S1 ; turn on vibration supression
 
 
 ;===== nozzle load line =============================== ; adaptive purge line by u/Jusanden on Reddit
-M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
+;M104 S{nozzle_temperature_initial_layer[initial_extruder]} ; set extrude temp earlier, to reduce wait time
 M975 S1
 G90
 M83
@@ -250,11 +253,11 @@ M400
 ;===== for Textured PEI Plate , lower the nozzle as the nozzle was touching topmost of the texture when homing ==
 ;curr_bed_type={curr_bed_type}
 {if curr_bed_type=="Textured PEI Plate"}
-G29.1 Z{-0.04} ; for Textured PEI Plate
+G29.1 Z{-0.03} ; for Textured PEI Plate
 {endif}
 
 {if (curr_bed_type=="Textured Cool Plate")} ; Textured Cool Plate support by u/Jusanden on Reddit
-G29.1 Z{-0.04} ; for Textured PEI Plate
+G29.1 Z{-0.03} ; for Textured PEI Plate
 {endif}
 
 ;========turn off everything and start print =============
