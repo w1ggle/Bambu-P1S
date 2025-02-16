@@ -68,7 +68,7 @@ M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ; drop nozzle temp
 M106 P1 S0 ;turn off part cooling fan (too noisy)
 G92 E0
 G1 E-0.5 F300 ;retract 0.5mm of filament
-
+M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;moved bed temp here ;testing move from line 93 to 71 since there seems to be some oozing when theres waiting. Hopefully can be cleaned by wiping in poop chute
 
 ;====== wiping nozzle in poop chute ============
 G1 X70 F9000
@@ -87,10 +87,10 @@ M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
 M975 S1 ; turn on vibration suppression
 G1 X65 Y230 F18000 ;move to poop chute?
 G1 Y264 F6000
-M106 P1 S255 ;turn on fan to help nozzle cool down
-M109 S{nozzle_temperature_initial_layer[initial_extruder]-20}
-M106 P1 S0 ;turn off fan. too noisy
-M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;moved bed temp here
+;M106 P1 S255 ;turn on fan to help nozzle cool down
+;M109 S{nozzle_temperature_initial_layer[initial_extruder]-20}
+;M106 P1 S0 ;turn off fan. too noisy
+;M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;moved bed temp here
 
 G1 X100 F18000 ; first wipe mouth. might be oozing after waiting for temps
 
