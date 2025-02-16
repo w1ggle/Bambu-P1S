@@ -82,7 +82,7 @@ G1 X80 F15000
 G1 X165 F15000; wipe and shake
 M400
 
-;===== home z axis ===============================
+;===== wait for temps ===============================
 M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
 M975 S1 ; turn on vibration suppression
 G1 X65 Y230 F18000 ;move to poop chute?
@@ -94,6 +94,7 @@ M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;moved bed temp 
 
 G1 X100 F18000 ; first wipe mouth. might be oozing after waiting for temps
 
+;===== home z axis ===============================
 G0 X135 Y253 F20000  ; move to exposed steel surface edge in middle back
 G28 Z P0 T300; home z with low precision,permit 300deg temperature
 G29.2 S0 ; turn off ABL
@@ -163,7 +164,7 @@ G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 
-M109 S140 ; wait nozzle temp down to heatbed acceptable
+M109 S140 ; wait nozzle temp down to heatbed acceptable. this is for last clean and bed leveling
 M106 S0 ; turn off part cooling fan , too noisy
 G2 I0.5 J0 F3000 ;spin in cirlces
 G2 I0.5 J0 F3000
