@@ -82,7 +82,7 @@ M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_t
 
 ; ========== purge nozzle and remove poop ========== ; i think theres no need to purge nozzle every time unless ams is used, i think this should be in ams block above
 ;M109 S250 ;set nozzle to common flush temp
-;M106 P1 S0 ;turn off fan (helps nozzle heat up faster)
+
 ;G92 E0 ;reset extruded to 0
 ;G1 E10 F200 ;reduced extrusion from 50 to 10
 ;M400 ;wait till everything is done
