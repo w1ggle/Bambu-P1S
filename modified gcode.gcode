@@ -159,6 +159,7 @@ G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 
 M109 S140 ; wait nozzle temp down to heatbed acceptable
+M106 S0 ; turn off fan , too noisy
 G2 I0.5 J0 F3000 ;spin in cirlces
 G2 I0.5 J0 F3000
 G2 I0.5 J0 F3000
@@ -171,7 +172,6 @@ G1 Z10
 G1 F30000
 G1 X230 Y15
 G29.2 S1 ; turn on ABL
-M106 S0 ; turn off fan , too noisy
 
 
 ;===== bed leveling ==================================
