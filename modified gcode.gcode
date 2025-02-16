@@ -36,7 +36,7 @@ G1 X60 F12000
 G1 Y245
 G1 Y265 F3000
 
-; ========== switch material if AMS exists ==========
+; ========== switch material if AMS exists ==========; not sure what this section does tbh
 M620 M
 M620 S[initial_extruder]A   ; switch material if AMS exist
     M109 S[nozzle_temperature_initial_layer]
@@ -52,22 +52,23 @@ M621 S[initial_extruder]A
 M620.1 E F{filament_max_volumetric_speed[initial_extruder]/2.4053*60} T{nozzle_temperature_range_high[initial_extruder]}
 
 ;====== purge/poop time ============
-M106 P1 S0 ;turn off fan (helps nozzle heat up faster)
-M109 S250 ;wait for nozzle purge temp; this gets rid of old material in nozzle
+M106 P1 S0 ;turn off part cooling fan (helps nozzle heat up faster)
+M109 S250 ;wait for nozzle purge temp of old/any material. extreme example is abs to pla. need high temp to get rid of abs 
 G92 E0 ;reset extruded to 0
 G1 E10 F200 ;reduced extrusion from 50 to 10
 M400 ;wait till everything is done
-M104 S[nozzle_temperature_initial_layer] ;purge again with new material
+M104 S[nozzle_temperature_initial_layer] ;purge again with new material temp
 G92 E0
 G1 E10 F200 ;reduced extrusion from 50 to 10
 M400
 G92 E0
 G1 E5 F300 ;purge 5 mm more. 25 mm total purged
-M106 P1 S255 ;turn on fan to help nozzle cool down
+M106 P1 S255 ;turn on part cooling fan to help nozzle cool down
 M109 S{nozzle_temperature_initial_layer[initial_extruder]-20} ; drop nozzle temp, make filament shink a bit
+M106 P1 S0 ;turn off part cooling fan (too noisy)
 G92 E0
 G1 E-0.5 F300 ;retract 0.5mm of filament
-M106 P1 S0 ;turn off fan
+
 
 ;====== wiping nozzle in poop chute ============
 G1 X70 F9000
@@ -86,8 +87,9 @@ M1002 gcode_claim_action : 14 ;Cleaning nozzle tip
 M975 S1 ; turn on vibration suppression
 G1 X65 Y230 F18000 ;move to poop chute?
 G1 Y264 F6000
-M106 S255 ;turn on fan to help nozzle cool down
+M106 P1 S255 ;turn on fan to help nozzle cool down
 M109 S{nozzle_temperature_initial_layer[initial_extruder]-20}
+M106 P1 S0 ;turn off fan. too noisy
 M190 S[bed_temperature_initial_layer_single] ;wait for bed temp ;moved bed temp here
 
 G1 X100 F18000 ; first wipe mouth. might be oozing after waiting for temps
@@ -111,11 +113,12 @@ G1 X100 F5000
 G1 X70 F15000
 G1 X90 F5000
 
-;===== scrape nozzle on print bed ===============================
+;===== scrape nozzle on print bed for cleaning ===============================
 G0 X128 Y261 Z-1.5 F20000  ; move to exposed steel surface and stop the nozzle
 M104 S140 ; set temp down to heatbed acceptable
-M106 S255 ; turn on fan (G28 has turn off fan). helps cool down nozzle
+M106 P1 S255 ; turn on part cooling fan (G28 has turn off fan). helps cool down nozzle
 
+;move left and right in the slot located in the back middle
 M221 S; push soft endstop status
 M221 Z0 ;turn off Z axis endstop
 G0 Z0.5 F20000
@@ -153,13 +156,15 @@ G0 Z-1.01
 G0 X131 F211
 G0 X124
 G0 X128
-G2 I0.5 J0 F300 ;spin in cirlces
+
+;spin in cirlces in the slot in the back middle
+G2 I0.5 J0 F300 
 G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 G2 I0.5 J0 F300
 
 M109 S140 ; wait nozzle temp down to heatbed acceptable
-M106 S0 ; turn off fan , too noisy
+M106 S0 ; turn off part cooling fan , too noisy
 G2 I0.5 J0 F3000 ;spin in cirlces
 G2 I0.5 J0 F3000
 G2 I0.5 J0 F3000
